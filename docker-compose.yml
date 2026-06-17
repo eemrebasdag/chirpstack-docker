@@ -43,7 +43,7 @@ services:
       dockerfile: Dockerfile.postgres
     restart: unless-stopped
     volumes:
-      - postgresqldata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=chirpstack
       - POSTGRES_PASSWORD=chirpstack
@@ -63,5 +63,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgresqldata:
+  pgdata:
   redisdata:
