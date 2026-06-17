@@ -13,14 +13,15 @@ services:
       - MQTT_BROKER_HOST=mosquitto
       - REDIS_HOST=redis
       - POSTGRESQL_HOST=postgres
-    ports:
-      - "8080:8080"
+    # No host port here — Coolify routes :8080 via its HTTPS proxy (Step 5).
+    expose:
+      - "8080"
 
   chirpstack-gateway-bridge:
     image: chirpstack/chirpstack-gateway-bridge:4
     restart: unless-stopped
     ports:
-      - "1700:1700/udp"
+      - "1700:1700/udp"          # Semtech UDP packet-forwarder gateways
     volumes:
       - ./configuration/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
     environment:
@@ -29,13 +30,13 @@ services:
       - INTEGRATION__MQTT__COMMAND_TOPIC_TEMPLATE=eu868/gateway/{{ .GatewayID }}/command/#
     depends_on:
       - mosquitto
-  
+
   chirpstack-gateway-bridge-basicstation:
     image: chirpstack/chirpstack-gateway-bridge:4
     restart: unless-stopped
     command: -c /etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge-basicstation-eu868.toml
     ports:
-      - "3001:3001"
+      - "3001:3001"              # LoRa Basics Station gateways (plaintext; keep firewalled until used)
     volumes:
       - ./configuration/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
     depends_on:
@@ -45,8 +46,7 @@ services:
     image: chirpstack/chirpstack-rest-api:4
     restart: unless-stopped
     command: --server chirpstack:8080 --bind 0.0.0.0:8090 --insecure
-    ports:
-      - "8090:8090"
+    # internal only — not published to the host
     depends_on:
       - chirpstack
 
@@ -71,9 +71,8 @@ services:
   mosquitto:
     image: eclipse-mosquitto:2
     restart: unless-stopped
-    ports:
-      - "1883:1883"
-    volumes: 
+    # internal only — gateway-bridge and chirpstack reach it over the Docker network
+    volumes:
       - ./configuration/mosquitto/config/:/mosquitto/config/
 
 volumes:
