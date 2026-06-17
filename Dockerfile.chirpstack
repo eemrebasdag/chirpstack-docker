@@ -1,0 +1,2 @@
+FROM chirpstack/chirpstack:4
+COPY configuration/chirpstack/ /etc/chirpstack/
